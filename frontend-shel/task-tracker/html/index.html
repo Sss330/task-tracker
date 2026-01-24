@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Planner</title>
+
+    <!-- Tailwind (быстрый старт) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100">
+<!-- Header -->
+<header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+        <div class="text-lg font-semibold tracking-tight">Task Planner</div>
+
+        <div id="authArea" class="flex items-center gap-2">
+            <!-- dynamic -->
+        </div>
+    </div>
+</header>
+
+<!-- Global alert (как thymeleaf: сверху блок ошибки) -->
+<div class="mx-auto max-w-5xl px-4 pt-4">
+    <div id="globalAlert" class="hidden rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200"></div>
+</div>
+
+<main class="mx-auto max-w-5xl px-4 py-6">
+    <!-- Guest -->
+    <section id="guestArea" class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 text-center">
+        <h2 class="text-xl font-semibold">Войдите, чтобы увидеть задачи</h2>
+        <p class="mt-2 text-slate-400">Используйте Login / Register в правом верхнем углу.</p>
+    </section>
+
+    <!-- App (only authorized) -->
+    <section id="appArea" class="hidden">
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+            <div class="flex flex-col gap-2 sm:flex-row">
+                <input id="newTaskTitle"
+                       class="flex-1 rounded-xl bg-slate-950 px-3 py-2 ring-1 ring-slate-700 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                       placeholder="Заголовок новой задачи..." />
+                <button id="addTaskBtn"
+                        class="rounded-xl bg-sky-500 px-4 py-2 font-semibold text-slate-950 hover:bg-sky-400 active:scale-[0.99]">
+                    Добавить
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-4 grid gap-4 md:grid-cols-2">
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/40">
+                <div class="border-b border-slate-800 px-4 py-3 font-semibold">Несделанные</div>
+                <ul id="todoList" class="p-2"></ul>
+            </div>
+
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/40">
+                <div class="border-b border-slate-800 px-4 py-3 font-semibold">Сделанные</div>
+                <ul id="doneList" class="p-2"></ul>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Auth Modal -->
+<div id="authModal" class="fixed inset-0 hidden items-center justify-center bg-black/60 p-4">
+    <div class="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-5">
+        <div class="flex items-center justify-between">
+            <h3 id="authModalTitle" class="text-lg font-semibold">Вход</h3>
+            <button id="authCloseBtn" class="rounded-lg px-2 py-1 text-slate-300 hover:bg-slate-800">✕</button>
+        </div>
+
+        <div id="authAlert" class="mt-3 hidden rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200"></div>
+
+        <!-- Login form -->
+        <form id="loginForm" class="mt-4 hidden space-y-3">
+            <div>
+                <label class="text-sm text-slate-300">Email</label>
+                <input name="email" type="email" required
+                       class="mt-1 w-full rounded-xl bg-slate-900 px-3 py-2 ring-1 ring-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+            <div>
+                <label class="text-sm text-slate-300">Password</label>
+                <input name="password" type="password" required
+                       class="mt-1 w-full rounded-xl bg-slate-900 px-3 py-2 ring-1 ring-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+            <button class="w-full rounded-xl bg-sky-500 px-4 py-2 font-semibold text-slate-950 hover:bg-sky-400">
+                Войти
+            </button>
+        </form>
+
+        <!-- Register form -->
+        <form id="registerForm" class="mt-4 hidden space-y-3">
+            <div>
+                <label class="text-sm text-slate-300">Email</label>
+                <input name="email" type="email" required
+                       class="mt-1 w-full rounded-xl bg-slate-900 px-3 py-2 ring-1 ring-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+            <div>
+                <label class="text-sm text-slate-300">Password</label>
+                <input name="password" type="password" required minlength="6"
+                       class="mt-1 w-full rounded-xl bg-slate-900 px-3 py-2 ring-1 ring-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+            <div>
+                <label class="text-sm text-slate-300">Repeat password</label>
+                <input name="repeatPassword" type="password" required minlength="6"
+                       class="mt-1 w-full rounded-xl bg-slate-900 px-3 py-2 ring-1 ring-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+            <button class="w-full rounded-xl bg-emerald-500 px-4 py-2 font-semibold text-slate-950 hover:bg-emerald-400">
+                Зарегистрироваться
+            </button>
+        </form>
+
+        <div class="mt-4 flex justify-between text-sm">
+            <button id="switchToLogin" class="text-sky-400 hover:underline">У меня уже есть аккаунт</button>
+            <button id="switchToRegister" class="text-sky-400 hover:underline">Создать аккаунт</button>
+        </div>
+    </div>
+</div>
+
+<!-- Task Modal -->
+<div id="taskModal" class="fixed inset-0 hidden items-center justify-center bg-black/60 p-4">
+    <div class="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-950 p-5">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Задача</h3>
+            <button id="taskCloseBtn" class="rounded-lg px-2 py-1 text-slate-300 hover:bg-slate-800">✕</button>
+        </div>
+
+        <div id="taskAlert" class="mt-3 hidden rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200"></div>
+
+        <div class="mt-4 space-y-3">
+            <div>
+                <label class="text-sm text-slate-300">Заголовок</label>
+                <input id="taskTitleInput"
+                       class="mt-1 w-full rounded-xl bg-slate-900 px-3 py-2 ring-1 ring-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+
+            <div>
+                <label class="text-sm text-slate-300">Описание</label>
+                <textarea id="taskDescInput" rows="6"
+                          class="mt-1 w-full rounded-xl bg-slate-900 px-3 py-2 ring-1 ring-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+            </div>
+
+            <div class="text-sm text-slate-400">
+                Перетащи карточку задачи между колонками “Несделанные” и “Сделанные”.
+            </div>
+
+        </div>
+
+        <div class="mt-4 flex items-center justify-between">
+            <div class="text-xs text-slate-400">Изменения сохраняются автоматически</div>
+            <button id="deleteTaskBtn" class="rounded-xl bg-red-500/15 px-4 py-2 font-semibold text-red-200 ring-1 ring-red-500/30 hover:bg-red-500/20">
+                Удалить
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/app.js"></script>
+</body>
+</html>
